@@ -1,3 +1,14 @@
+.wrapperFilter {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 100;
+  background: #ffffff;
+  -webkit-box-shadow: -5px 2px 8px 0px rgba(144, 149, 154, 0.2);
+  -moz-box-shadow: -5px 2px 8px 0px rgba(144, 149, 154, 0.2);
+  box-shadow: -5px 2px 8px 0px rgba(144, 149, 154, 0.2);
+}
+
 .filter {
   cursor: pointer;
   margin: 20px auto;
@@ -6,4 +17,8 @@
   border-radius: 2px;
   color: #ffffff;
   background-color: black;
+}
+
+.text {
+  margin-top: 30px;
 }

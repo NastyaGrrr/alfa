@@ -1,26 +1,20 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import styles from './styles.module.scss';
 import {connect} from "react-redux";
 import {filterSelector, isLoadingSelector, listDataSelector} from "../../store/list/selectors";
 import {IRootState} from '../../store/types';
-import {
-    FilterType,
-    IListState,
-    ISetDeleteAction,
-    ISetFilterAction, ISetLikesAction,
-    ListType
-} from "../../store/list/types";
-import {Action, bindActionCreators, Dispatch} from 'redux';
-import {deleteItem, fetchList, setFilter, setLike} from "../../store/list/actions";
-import ItemList from "../../components/ ItemList";
-import Spin from "../../components/Spin";
-import {ThunkAction} from "redux-thunk";
+import { FilterType, IListState, ISetDeleteAction, ISetFilterAction, ISetLikesAction, ListType } from "../../store/list/types";
+import { Action, bindActionCreators, Dispatch } from 'redux';
+import { deleteItem, fetchList, setFilter, setLike } from "../../store/list/actions";
+import ItemList from "../../components/itemList";
+import Spin from "../../components/spin";
+import { ThunkAction } from "redux-thunk";
 
 interface IMapDispatchToProps {
-    dispatchFilter: (arg:FilterType) => ISetFilterAction
-    dispatchDelete: (arg:string) => ISetDeleteAction
+    dispatchFilter: (arg: FilterType) => ISetFilterAction
+    dispatchDelete: (arg: string) => ISetDeleteAction
     dispatchFetchList: () => ThunkAction<Promise<boolean>, any, null, Action<boolean>>
-    dispatchLike: (arg:string) => ISetLikesAction
+    dispatchLike: (arg: string) => ISetLikesAction
 }
 
 type ListPropsType = IMapDispatchToProps & IListState;
@@ -32,35 +26,40 @@ const List: React.FC<ListPropsType> = ({
                                            dispatchLike,
                                            filter,
                                            list,
-                                           isLoading
+                                           isLoading,
                                        }) => {
-    const [filterData, setFilterData] = useState<ListType[]>([]);
+    const [currentData, setCurrentData] = useState<ListType[]>(list);
 
     useEffect(() => {
         dispatchFetchList();
     }, [dispatchFetchList]);
 
     useEffect(() => {
-        setFilterData(filter.isOnlyLikes ? list.filter((item) => item.isLike) : []);
-    }, [filter.isOnlyLikes, list])
+       setCurrentData(list);
+    }, [list]);
+
+    const setFilter = useCallback( () => {
+        dispatchFilter({isOnlyLikes: !filter.isOnlyLikes});
+        if (!filter.isOnlyLikes) {
+            setCurrentData(filter.isOnlyLikes ? list.filter((item) => item.isLike) : []);
+        } else {
+            setCurrentData(list);
+        }
+    },[dispatchFilter, filter.isOnlyLikes, list]);
 
     return (<div className={styles.container}>
             {isLoading && <Spin />}
             {!isLoading && <>
+              <div className={styles.wrapperFilter}>
               <button className={styles.filter}
-                      onClick={() => dispatchFilter({isOnlyLikes: !filter.isOnlyLikes})}>
+                      onClick={setFilter}>
                   {filter?.isOnlyLikes ? 'Показать все' : 'Показать только понравившиеся'}
               </button>
+              </div>
               <div>
-                  {!filter.isOnlyLikes && list?.length !== 0 && list.map((item) => (
-                      <ItemList key={item.id} image={item.image}
-                                isLike={item.isLike}
-                                handleDelete={dispatchDelete}
-                                handleLikes={dispatchLike} id={item.id} />
-                  ))}
-                  {filter.isOnlyLikes && filterData?.length === 0 &&
-                  <div>Пока нет фотографий, которые вам понравились</div>}
-                  {filter.isOnlyLikes && filterData.map((item) => (
+                  {filter.isOnlyLikes && currentData?.length === 0 &&
+                  <div className={styles.text}>Пока нет фотографий, которые вам понравились</div>}
+                  {currentData && currentData.length !== 0 && currentData.map((item) => (
                       <ItemList key={item.id}
                                 image={item.image}
                                 isLike={item.isLike}
