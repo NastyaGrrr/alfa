@@ -35,17 +35,14 @@ const List: React.FC<ListPropsType> = ({
     }, [dispatchFetchList]);
 
     useEffect(() => {
-       setCurrentData(list);
-    }, [list]);
+        if (filter.isOnlyLikes) {
+            setCurrentData(list.filter((item) => item.isLike));
+        } else setCurrentData(list);
+    }, [list, filter.isOnlyLikes]);
 
     const setFilter = useCallback( () => {
         dispatchFilter({isOnlyLikes: !filter.isOnlyLikes});
-        if (!filter.isOnlyLikes) {
-            setCurrentData(filter.isOnlyLikes ? list.filter((item) => item.isLike) : []);
-        } else {
-            setCurrentData(list);
-        }
-    },[dispatchFilter, filter.isOnlyLikes, list]);
+    },[dispatchFilter, filter.isOnlyLikes]);
 
     return (<div className={styles.container}>
             {isLoading && <Spin />}
